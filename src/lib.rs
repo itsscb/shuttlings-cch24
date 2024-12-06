@@ -1,7 +1,8 @@
 mod routes;
 
+use axum::routing::post;
 pub use routes::hello_world;
-use routes::{hello_bird, ipv4_dest, ipv4_key, ipv6_dest, ipv6_key, minus_one};
+use routes::{hello_bird, ipv4_dest, ipv4_key, ipv6_dest, ipv6_key, manifest, minus_one};
 
 pub fn router() -> axum::Router {
     use axum::routing::get;
@@ -14,6 +15,7 @@ pub fn router() -> axum::Router {
         .route("/2/key", get(ipv4_key))
         .route("/2/v6/dest", get(ipv6_dest))
         .route("/2/v6/key", get(ipv6_key))
+        .route("/5/manifest", post(manifest))
         .route("/", get(hello_bird))
 }
 
@@ -130,5 +132,222 @@ mod test {
 
         let response = server.get("/2/v6/dest?from=fe80::1&to=invalid-to").await;
         response.assert_status_bad_request();
+    }
+
+    #[tokio::test]
+    async fn test_manifest_1() {
+        let server = test_server();
+
+        let want = "Toy car: 2\nLego brick: 230";
+
+        let payload = r#"[package]
+name = "not-a-gift-order"
+authors = ["Not Santa"]
+keywords = ["Christmas 2024"]
+
+[[package.metadata.orders]]
+item = "Toy car"
+quantity = 2
+
+[[package.metadata.orders]]
+item = "Lego brick"
+quantity = 230"#;
+        let response = server
+            .post("/5/manifest")
+            .text(payload)
+            .content_type("application/toml")
+            .await;
+
+        response.assert_status_ok();
+        response.assert_text(want);
+
+        let payload = r#"[package]
+name = "coal-in-a-bowl"
+authors = ["H4CK3R_13E7"]
+keywords = ["Christmas 2024"]
+
+[[package.metadata.orders]]
+item = "Coal"
+quantity = "Hahaha get rekt""#;
+
+        let response = server
+            .post("/5/manifest")
+            .text(payload)
+            .content_type("application/toml")
+            .await;
+        response.assert_status(StatusCode::NO_CONTENT);
+    }
+
+    #[tokio::test]
+    async fn test_manifest_2() {
+        let server = test_server();
+
+        let payload = r#"[package]
+name = false
+authors = ["Not Santa"]
+keywords = ["Christmas 2024"]"#;
+
+        let response = server
+            .post("/5/manifest")
+            .text(payload)
+            .content_type("application/toml")
+            .await;
+        response.assert_status(StatusCode::BAD_REQUEST);
+
+        let payload = r#"[package]
+name = "not-a-gift-order"
+authors = ["Not Santa"]
+keywords = ["Christmas 2024"]
+
+[profile.release]
+incremental = "stonks""#;
+        let response = server
+            .post("/5/manifest")
+            .text(payload)
+            .content_type("application/toml")
+            .await;
+        response.assert_status(StatusCode::BAD_REQUEST);
+    }
+
+    #[tokio::test]
+    async fn test_manifest_3() {
+        let server = test_server();
+
+        let want = "Toy car: 2\nLego brick: 230";
+
+        let payload = r#"[package]
+name = "not-a-gift-order"
+authors = ["Not Santa"]
+keywords = ["Christmas 2024"]
+
+[[package.metadata.orders]]
+item = "Toy car"
+quantity = 2
+
+[[package.metadata.orders]]
+item = "Lego brick"
+quantity = 230"#;
+        let response = server
+            .post("/5/manifest")
+            .text(payload)
+            .content_type("application/toml")
+            .await;
+
+        response.assert_status_ok();
+        response.assert_text(want);
+
+        let payload = r#"[package]
+name = "not-a-gift-order"
+authors = ["Not Santa"]
+
+[[package.metadata.orders]]
+item = "Toy car"
+quantity = 2
+
+[[package.metadata.orders]]
+item = "Lego brick"
+quantity = 230"#;
+        let response = server
+            .post("/5/manifest")
+            .text(payload)
+            .content_type("application/toml")
+            .await;
+
+        response.assert_status(StatusCode::BAD_REQUEST);
+        response.assert_text("Magic keyword not provided");
+
+        let payload = r#"[package]
+name = "grass"
+authors = ["A vegan cow"]
+keywords = ["Moooooo"]"#;
+
+        let response = server
+            .post("/5/manifest")
+            .text(payload)
+            .content_type("application/toml")
+            .await;
+        response.assert_status(StatusCode::BAD_REQUEST);
+        response.assert_text("Magic keyword not provided");
+
+        let payload = r#"[package]
+name = "grass"
+authors = ["A vegan cow"]
+keywords = ["Christmas 2024"]"#;
+
+        let response = server
+            .post("/5/manifest")
+            .text(payload)
+            .content_type("application/toml")
+            .await;
+        response.assert_status(StatusCode::NO_CONTENT);
+    }
+
+    #[tokio::test]
+    async fn test_manifest_4() {
+        let server = test_server();
+
+        let payload = r#"[package]
+name = "grass"
+authors = ["A vegan cow"]
+keywords = ["Christmas 2024"]"#;
+
+        let response = server
+            .post("/5/manifest")
+            .text(payload)
+            .content_type("text/html")
+            .await;
+        response.assert_status(StatusCode::UNSUPPORTED_MEDIA_TYPE);
+
+        let want = "Toy train: 5";
+
+        let payload = r#"package:
+  name: big-chungus-sleigh
+  version: "2.0.24"
+  metadata:
+    orders:
+      - item: "Toy train"
+        quantity: 5
+  rust-version: "1.69"
+  keywords:
+    - "Christmas 2024""#;
+
+        let response = server
+            .post("/5/manifest")
+            .text(payload)
+            .content_type("application/yaml")
+            .await;
+
+        response.assert_status_ok();
+        response.assert_text(want);
+
+        let want = "Toy train: 5";
+
+        let payload = r#"{
+    "package": {
+        "name": "big-chungus-sleigh",
+        "version": "2.0.24",
+        "metadata": {
+            "orders": [
+                {
+                    "item": "Toy train",
+                    "quantity": 5
+                }
+            ]
+        },
+        "rust-version": "1.69",
+        "keywords": [
+            "Christmas 2024"
+        ]
+    }
+}"#;
+
+        let response = server
+            .post("/5/manifest")
+            .text(payload)
+            .content_type("application/json")
+            .await;
+
+        response.assert_status_ok();
+        response.assert_text(want);
     }
 }
