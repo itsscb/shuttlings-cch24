@@ -20,3 +20,7 @@ axum-test = "16.4.0"
 [features]
 default = []
 task1-9 = ["cargo-manifest", "serde_yml", "toml"]
+task12 = []
+task16 = []
+task19 = []
+task23 = []
