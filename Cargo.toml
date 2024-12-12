@@ -13,6 +13,7 @@ tokio = "1.28.2"
 cargo-manifest = { version = "0.17.0", optional = true }
 serde_yml = { version = "0.0.12", optional = true }
 toml = { version = "0.8.19", optional = true }
+rand = { version = "0.8.5", optional = true }
 
 [dev-dependencies]
 axum-test = "16.4.0"
@@ -20,7 +21,7 @@ axum-test = "16.4.0"
 [features]
 default = []
 task1-9 = ["cargo-manifest", "serde_yml", "toml"]
-task12 = []
+task12 = ["rand"]
 task16 = []
 task19 = []
 task23 = []

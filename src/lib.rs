@@ -1,17 +1,20 @@
 mod routes;
 
+// use axum::routing::{get, post};
+#[cfg(feature = "task12")]
+use routes::{board, place, random_board, reset, Board};
 #[cfg(feature = "task1-9")]
 use routes::{
     hello_bird, hello_world, ipv4_dest, ipv4_key, ipv6_dest, ipv6_key, manifest, milk, minus_one,
     refill, MilkFactory,
 };
 
+#[allow(unused_imports)]
 pub fn router() -> axum::Router {
-    #[cfg(feature = "task1-9")]
-    use axum::routing::get;
-    #[cfg(feature = "task1-9")]
-    use axum::routing::post;
-    use axum::Router;
+    use axum::{
+        routing::{get, post},
+        Router,
+    };
 
     #[cfg(feature = "task1-9")]
     let milk_factory = MilkFactory::new();
@@ -30,6 +33,13 @@ pub fn router() -> axum::Router {
         .with_state(milk_factory)
         .route("/", get(hello_bird));
 
-    // #[cfg(feature="task12")]
+    #[cfg(feature = "task12")]
+    Router::new()
+        .route("/12/board", get(board))
+        .route("/12/reset", post(reset))
+        .route("/12/place/:team/:column", post(place))
+        .route("/12/random-board", get(random_board))
+        .with_state(Board::new());
+
     Router::new()
 }
