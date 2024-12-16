@@ -128,10 +128,9 @@ No winner.
         let response = server.post("/12/place/cookie/3").await;
         response.assert_status_ok();
 
-        // for i in 4..5 {
         let response = server.post("/12/place/milk/4").await;
         response.assert_status_ok();
-        // }
+
         let response = server.post("/12/place/cookie/4").await;
         response.assert_status_ok();
 
@@ -154,7 +153,7 @@ No winner.
 ⬜⬜⬜⬜⬜⬜
 ";
         let response = server.get("/12/random-board").await;
-        // dbg!(response.text());
+
         response.assert_status_ok();
         response.assert_text(want);
 

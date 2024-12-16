@@ -1,8 +1,8 @@
 mod routes;
 
-// use axum::routing::{get, post};
 #[cfg(feature = "task12")]
 use routes::{board, place, random_board, reset, Board};
+use routes::{decode, unwrap, wrap};
 #[cfg(feature = "task1-9")]
 use routes::{
     hello_bird, hello_world, ipv4_dest, ipv4_key, ipv6_dest, ipv6_key, manifest, milk, minus_one,
@@ -42,4 +42,7 @@ pub fn router() -> axum::Router {
         .with_state(Board::new());
 
     Router::new()
+        .route("/16/wrap", post(wrap))
+        .route("/16/unwrap", get(unwrap))
+        .route("/16/decode", post(decode))
 }

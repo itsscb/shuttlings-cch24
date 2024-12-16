@@ -42,7 +42,6 @@ impl Board {
 
     pub fn random(&self, random: &mut StdRng) {
         let mut columns: [[Option<Slot>; 4]; 4] = [[None; 4]; 4];
-        // let mut seed = self.seed.lock().unwrap();
         for i in (0..4).rev() {
             (0..4).for_each(|j| {
                 let random = random.gen::<bool>();
@@ -54,17 +53,6 @@ impl Board {
                 columns[j][i] = slot;
             });
         }
-        // for column in &mut columns.iter_mut() {
-        //     for slot in column.iter_mut() {
-        //         let random = random.gen::<bool>();
-        //         if random {
-        //             *slot = Some(Slot::Cookie);
-        //         } else {
-        //             *slot = Some(Slot::Milk);
-        //         }
-        //     }
-        // }
-        // drop(seed);
 
         {
             let mut cols = self.columns.lock().unwrap();

@@ -36,7 +36,6 @@ pub async fn place(
 
 #[allow(clippy::unused_async)]
 pub async fn random_board(State(board): State<Board>) -> impl IntoResponse {
-    // let mut random = rand::rngs::StdRng::seed_from_u64(2024);
     let seed = board.get_seed();
     let mut random = seed.lock().unwrap();
     board.random(&mut random);
