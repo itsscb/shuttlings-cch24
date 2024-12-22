@@ -1,7 +1,10 @@
 mod routes;
 
+use axum::routing::{delete, put};
+use routes::task_nineteen::{cite, draft, list, remove, reset, undo};
 #[cfg(feature = "task12")]
 use routes::{board, place, random_board, reset, Board};
+#[cfg(feature = "task16")]
 use routes::{decode, unwrap, wrap};
 #[cfg(feature = "task1-9")]
 use routes::{
@@ -10,7 +13,7 @@ use routes::{
 };
 
 #[allow(unused_imports)]
-pub fn router() -> axum::Router {
+pub fn router(pool: Option<sqlx::PgPool>) -> axum::Router {
     use axum::{
         routing::{get, post},
         Router,
@@ -41,8 +44,20 @@ pub fn router() -> axum::Router {
         .route("/12/random-board", get(random_board))
         .with_state(Board::new());
 
+    #[cfg(feature = "task16")]
     Router::new()
         .route("/16/wrap", post(wrap))
         .route("/16/unwrap", get(unwrap))
-        .route("/16/decode", post(decode))
+        .route("/16/decode", post(decode));
+
+    pool.map_or_else(Router::new, |pool| {
+        Router::new()
+            .route("/19/reset", post(reset))
+            .route("/19/draft", post(draft))
+            .route("/19/undo/:id", put(undo))
+            .route("/19/remove/:id", delete(remove))
+            .route("/19/cite/:id", get(cite))
+            .route("/19/list", get(list))
+            .with_state(pool)
+    })
 }

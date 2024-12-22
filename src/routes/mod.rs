@@ -3,9 +3,12 @@ mod task_twelve;
 #[cfg(feature = "task12")]
 pub use task_twelve::{board, game::Board, place, random_board, reset};
 
-// #[cfg(feature = "task16")]
+#[cfg(feature = "task16")]
 mod task_sixteen;
+#[cfg(feature = "task16")]
 pub use task_sixteen::{decode, unwrap, wrap};
+
+pub mod task_nineteen;
 
 #[cfg(feature = "task1-9")]
 mod hello_bird;

@@ -25,6 +25,7 @@
             rustToolchain
             clippy
 
+            sqlx-cli
 
             cargo-shuttle
             cargo-edit
@@ -36,6 +37,8 @@
           ];
 
           shellHook = ''
+            export SQLX_OFFLINE=true
+            export DATABASE_URL="postgres://postgres:postgres@localhost:5432/my_database"
             export PATH=${rustToolchain}/bin:$PATH
             export RUSTC_VERSION=$(rustc --version)
             export RUST_SRC_PATH="${rustToolchain}/lib/rustlib/src/rust/library"
