@@ -8,7 +8,10 @@ mod task_sixteen;
 #[cfg(feature = "task16")]
 pub use task_sixteen::{decode, unwrap, wrap};
 
+#[cfg(feature = "task19")]
 pub mod task_nineteen;
+
+pub mod task_twentythree;
 
 #[cfg(feature = "task1-9")]
 mod hello_bird;

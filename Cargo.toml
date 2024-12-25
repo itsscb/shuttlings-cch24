@@ -29,14 +29,18 @@ sqlx = { version = "0.8.2", features = [
     "migrate",
 ] }
 uuid = { version = "1.11.0", features = ["v4"] }
+tower-http = { version = "0.6.2", features = ["fs"], optional = true }
+html-escape = "0.2.13"
+regex = "1.11.1"
+hex = "0.4.3"
 
 [dev-dependencies]
 axum-test = "16.4.0"
 
 [features]
-default = ["shuttle-shared-db"]
+default = ["tower-http", "toml"]
 task1-9 = ["cargo-manifest", "serde_yml", "toml"]
 task12 = ["rand"]
 task16 = ["jsonwebtoken"]
-task19 = []
-task23 = []
+task19 = ["shuttle-shared-db"]
+task23 = ["tower-http", "toml"]
